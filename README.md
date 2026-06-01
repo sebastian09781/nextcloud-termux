@@ -35,6 +35,20 @@ Servidor Nextcloud 24/7 corriendo en un Samsung Galaxy Android con Termux, Apach
 └──────────────────────────────────────────────────┘
 ```
 
+## Prerrequisitos
+
+Antes de instalar el servidor, necesitas preparar el entorno Termux con **core-termux**, el framework que provee todas las herramientas base y permite instalar **opencode** — el asistente AI con el que fue construido y se mantiene este proyecto.
+
+```bash
+# Paso 1 — Instalar core-termux
+curl -fsSL https://raw.githubusercontent.com/DevCoreXOfficial/core-termux/main/install.sh | bash
+
+# Paso 2 — Instalar opencode (módulo AI)
+core install ai --opencode
+```
+
+> Sin core-termux y opencode, montar y mantener este servidor es significativamente más complejo. opencode es la clave que hizo posible este proyecto.
+
 ## Especificaciones del servidor
 
 | Componente | Detalle |
