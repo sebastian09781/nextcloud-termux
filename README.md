@@ -309,7 +309,7 @@ nextcloud-termux/
 
 ### Control automático de cargador
 
-👉 **[nextcloud-android-tasker](https://github.com/sebastian09781/nextcloud-android-tasker)**
+👉 **[battery-smart-charger](https://github.com/sebastian09781/battery-smart-charger)** (antes `nextcloud-android-tasker`)
 
 Controla un enchufe inteligente Tuya para encender el cargador al **30%** y apagarlo al **80%**, manteniendo la batería en el rango óptimo para máxima vida útil del servidor 24/7.
 
