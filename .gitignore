@@ -1,0 +1,6 @@
+scripts/__pycache__/
+config/config.php
+config/nc_vars.env
+*.pyc
+__pycache__/
+.DS_Store
