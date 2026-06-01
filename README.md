@@ -321,6 +321,14 @@ nextcloud-termux/
 
 <img src="https://github.com/sebastian09781/nextcloud-android-tasker/raw/master/screenshots/diagram.svg" width="400">
 
+### Instalación rápida
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sebastian09781/nextcloud-termux/main/install.sh | bash
+```
+
+Esto instala: core-termux → opencode → clona el repositorio y te guía para configurar el servidor.
+
 ### Control automático de cargador
 
 👉 **[battery-smart-charger](https://github.com/sebastian09781/battery-smart-charger)** (antes `nextcloud-android-tasker`)
