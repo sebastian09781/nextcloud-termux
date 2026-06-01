@@ -252,19 +252,79 @@ Ver el proyecto complementario: **[nextcloud-android-tasker](https://github.com/
 
 ## Cloudflare Worker
 
-El worker actúa como proxy inverso para proporcionar HTTPS y un dominio fijo:
+El Worker actúa como proxy inverso para darte un dominio HTTPS fijo mientras el tunnel usa URLs dinámicas de trycloudflare.
 
 ```
-https://nextcloud.sebastiancloud.workers.dev
-↓ (proxy)
-https://RANDOM.trycloudflare.com
-↓ (tunnel)
-http://127.0.0.1:8080
-↓ (Apache)
+https://tudominio.workers.dev     ← dominio fijo tuyo
+        ↓ (proxy)
+https://RANDOM.trycloudflare.com  ← tunnel temporal
+        ↓ (tunnel)
+http://127.0.0.1:8080             ← Apache en Termux
+        ↓
 Nextcloud PHP
 ```
 
-Se actualiza automáticamente en cada inicio desde `start_nextcloud.sh`.
+### Cómo crear el Worker
+
+1. Ve a [Cloudflare Dashboard → Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers)
+2. Crea un nuevo Worker con nombre `nextcloud` (o el que prefieras)
+3. Pega este código y haz clic en **Deploy**:
+
+```js
+const TUNNEL = "https://REEMPLAZA_CON_TU_TUNNEL.trycloudflare.com";
+const PUBLIC = "https://nextcloud.TU_DOMINIO.workers.dev";
+
+export default {
+  async fetch(req) {
+    const url = new URL(req.url);
+    const target = TUNNEL + url.pathname + url.search;
+    const headers = new Headers(req.headers);
+    headers.set("X-Forwarded-Proto", "https");
+    headers.set("X-Forwarded-Host", new URL(PUBLIC).host);
+    headers.delete("cf-connecting-ip");
+    const isBodyless = req.method === "GET" || req.method === "HEAD";
+    let res;
+    try {
+      res = await fetch(target, {
+        method: req.method, headers,
+        body: isBodyless ? undefined : req.body,
+        redirect: "manual"
+      });
+    } catch (e) {
+      return new Response("Servidor no disponible: " + e.message, { status: 503 });
+    }
+    const resHeaders = new Headers(res.headers);
+    if (resHeaders.has("location")) {
+      resHeaders.set("location",
+        resHeaders.get("location").replace(/https?:\/\/[a-z0-9-]*\.trycloudflare\.com/, PUBLIC));
+    }
+    resHeaders.set("X-Content-Type-Options", "nosniff");
+    resHeaders.set("X-Frame-Options", "SAMEORIGIN");
+    return new Response(res.body, { status: res.status, statusText: res.statusText, headers: resHeaders });
+  }
+};
+```
+
+4. Reemplaza `TUNNEL` con la URL de trycloudflare (se genera al ejecutar `scripts/start_tunnel.sh`) y `PUBLIC` con tu dominio real.
+
+### Actualización automática
+
+El script `scripts/update_worker.sh` lee la URL del tunnel desde los logs y la sube automáticamente al Worker de Cloudflare vía API.
+
+**Requisitos:** Necesitas:
+- Un **API Token** de Cloudflare con permisos ` Workers:Edit`
+- Tu **Account ID** (lo ves en Workers & Pages →右下)
+- Las variables `CF_TOKEN`, `ACCOUNT_ID` y `WORKER_NAME` en `~/nc_vars.env`
+
+```bash
+# ~/nc_vars.env (ejemplo)
+ACCOUNT_ID="1234567890abcdef1234567890abcdef"
+CF_TOKEN="tu_token_api_de_cloudflare"
+WORKER_NAME="nextcloud"
+PUBLIC_URL="https://nextcloud.tudominio.workers.dev"
+```
+
+La actualización se ejecuta automáticamente al correr `start_nextcloud.sh`.
 
 ## Configuración de la base de datos
 
